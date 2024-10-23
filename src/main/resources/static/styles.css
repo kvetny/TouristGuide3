@@ -1,0 +1,156 @@
+/* Base styling for the whole page */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 2rem;
+    margin-top: 20px;
+}
+
+/* Container for the form and table */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for form elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"], textarea, select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+/* Styling for the buttons */
+button {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+
+
+/* Styling for tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    color: #333;
+}
+
+td {
+    color: #555;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+
+/* Additional styling for the table action buttons */
+form {
+    display: inline;
+}
+
+/* Styling for submit button (green) */
+button[type="submit"] {
+    background-color: #28cc58; /* grøn */
+}
+
+button[type="submit"]:hover {
+    background-color: #20ad53;
+}
+
+.edit-btn {
+    background-color: rgb(72, 120, 197); /* blå */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-btn:hover {
+    background-color: rgba(34, 142, 230, 0.68);
+}
+
+.tags-btn {
+    background-color: rgb(121, 129, 142); /* blå */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tags-btn:hover {
+    background-color: rgba(174, 195, 192, 0.82);
+}
+
+form .delete-btn {
+    background-color: #e74c3c !important;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form .delete-btn:hover {
+    background-color: #c0392b !important;
+}
+
+/* Utility classes for alignment */
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}

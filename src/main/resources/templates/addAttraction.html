@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tilføj en ny attraktion</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+    <link rel="icon" th:href="@{/images/favicon.webp}" type="image/webp">
+
+</head>
+<body>
+<h1>Tilføj en ny attraktion</h1>
+<form th:action="@{/attractions/save}" method="post" th:object="${touristAttraction}">
+    <label for="name">Navn:</label>
+    <input type="text" id="name" th:field="*{name}" required><br>
+
+    <label for="description">Kort beskrivelse:</label>
+    <textarea id="description" th:field="*{description}" required></textarea><br>
+
+    <label for="city">By:</label>
+    <select id="city" th:field="*{city}" required>
+        <option th:each="city : ${cities}"
+                th:value="${city.city_id}"
+                th:text="${city.c_name}"></option>
+    </select><br>
+
+    <label>Tags:</label><br>
+    <div th:each="tag : ${availableTags}">
+        <input type="checkbox" th:field="*{tags}" th:value="${tag}" th:id="${tag}" />
+        <label th:for="${tag}" th:text="${tag}"></label><br>
+    </div>
+
+    <button type="submit">Gem</button>
+</form>
+<a href="/attractions">Tilbage til oversigten</a>
+</body>
+</html>
+
