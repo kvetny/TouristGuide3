@@ -13,9 +13,9 @@
    @Repository
    public class TouristRepository {
 
-       private String url = System.getenv("DB_URL");
-       private String user = System.getenv("DB_USER");
-       private String password = System.getenv("DB_PASSWORD");
+       final private String url = System.getenv("DB_URL");
+       final private String user = System.getenv("DB_USER");
+       final private String password = System.getenv("DB_PASSWORD");
 
 
        public List<TouristAttraction> findAll() {

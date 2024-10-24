@@ -19,9 +19,7 @@ public class TouristAttraction {
         this.name = name;
         this.description = description;
         this.city = city;
-        this.city_id = city_id;
         this.fee = fee;
-        this.tags = tags;
     }
 
     public int getId() {
