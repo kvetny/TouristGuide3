@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+//hej med dig ...
 
 // Betyder at klassen er en controller, der håndterer HTTP-forespørgelser
 @Controller
@@ -94,7 +95,7 @@ public class TouristController {
 
     // Metode til at slette en attraktion
     @PostMapping("/delete")
-    public String deleteAttraction(@RequestParam String name, Model model) {
+    public String deleteAttraction(@RequestParam String name) {
         boolean deleted = touristService.deleteAttraction(name);
         if (deleted) {
             return "redirect:/attractions";
