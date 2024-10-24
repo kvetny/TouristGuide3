@@ -42,25 +42,6 @@
            return attractions;
        }
 
-       public TouristAttraction updateAttraction(TouristAttraction updatedAttraction) {
-           String sql = "UPDATE Attraction SET a_name = ?, description = ?, city_id = ?, fee = ? WHERE a_name = ?";
-
-           try (Connection connection = DriverManager.getConnection(url, user, password);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
-
-               statement.setString(1, updatedAttraction.getName());       // Sætter den opdaterede a_name
-               statement.setString(2, updatedAttraction.getDescription()); // Sætter den opdaterede description
-               statement.setString(3, updatedAttraction.getCity());        // Sætter den opdaterede city_id
-               statement.setInt(4, updatedAttraction.getFee());           // Sætter den opdaterede fee
-               statement.setString(5, updatedAttraction.getName());       // Bruger det gamle navn til WHERE-klausulen
-
-               statement.executeUpdate();  // Udfør opdateringen
-           } catch (SQLException e) {
-               e.printStackTrace();
-           }
-           return updatedAttraction;
-       }
-
        public TouristAttraction getOneAttraction(String name) {
            // SQL til at hente attraktionen baseret på navn
            String sqlAttraction = "SELECT a.id, a.a_name, a.description, c.c_name, a.fee " +
@@ -90,6 +71,71 @@
            }
            return attraction;
        }
+
+       //Nye update metode !! med en masse comments.....
+       public TouristAttraction updateAttraction(TouristAttraction updatedAttraction) {
+           // SQL til at opdatere attraktionen i Attraction_tabellen
+           String updateAttractionSQL = "UPDATE Attraction SET a_name = ?, description = ?, city_id = ?, fee = ? WHERE id = ?";
+
+           try (Connection connection = DriverManager.getConnection(url, user, password)) {
+               // Opretter et PreparedStatement for at udføre opdateringen
+               try (PreparedStatement updateAttractionStatement = connection.prepareStatement(updateAttractionSQL)) {
+                   // Sætter værdierne fra updatedAttraction objektet ind i SQL-forespørgslen
+                   updateAttractionStatement.setString(1, updatedAttraction.getName());        // Opdaterer attraktionen navn
+                   updateAttractionStatement.setString(2, updatedAttraction.getDescription()); // Opdaterer attraktionens beskrivelse
+                   updateAttractionStatement.setInt(3, updatedAttraction.getCity_id());        // Opdaterer by-id for attraktionen
+                   updateAttractionStatement.setInt(4, updatedAttraction.getFee());            // Opdaterer gebyret for attraktionen
+                   updateAttractionStatement.setInt(5, updatedAttraction.getId());             // Identificerer hvilken attraktion der skal opdateres
+                   updateAttractionStatement.executeUpdate(); // Udfører opdateringen
+               }
+
+               // Hent eksisterende tags for at undgå at tilføje dubletter
+               List<String> existingTags = getTagsForAttraction(updatedAttraction.getId());
+
+               // Gennemgår de tags, der skal tilknyttes den opdaterede attraktion
+               for (String tagName : updatedAttraction.getTags()) {
+                   if (!existingTags.contains(tagName)) { // Tjekker om tagget allerede findes for attraktionen
+                       int tagId = findTagIdByName(tagName); // Finder tag_id for tagget baseret på tag_name
+                       if (tagId != -1) { // Hvis tagget findes i Tag-tabellen
+                           // SQL til at tilføje det nye tag til Attraction_tag-tabellen
+                           String insertTagSQL = "INSERT INTO Attraction_tag (attraction_id, tag_id) VALUES (?, ?)";
+                           try (PreparedStatement insertTagStatement = connection.prepareStatement(insertTagSQL)) {
+                               insertTagStatement.setInt(1, updatedAttraction.getId()); // Angiver attraction_id
+                               insertTagStatement.setInt(2, tagId);                    // Angiver tag_id
+                               insertTagStatement.executeUpdate(); // Udfører indsættelsen af tagget
+                           }
+                       }
+                   }
+               }
+
+           } catch (SQLException e) {
+               e.printStackTrace(); // Håndterer eventuelle SQL-fejl
+           }
+           return updatedAttraction; // Returnerer det opdaterede TouristAttraction objekt
+       }
+
+       private int findTagIdByName(String tagName) {
+           // SQL til at finde id for et givent tag_name
+           String sql = "SELECT id FROM Tag WHERE tag_name = ?";
+           int tagId = -1;  // Standard værdi, hvis tag ikke findes
+
+           try (Connection connection = DriverManager.getConnection(url, user, password);
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+               preparedStatement.setString(1, tagName); // Angiver tag_name i forespørgslen
+               ResultSet resultSet = preparedStatement.executeQuery(); // Udfører forespørgslen
+
+               // Tjekker om der er et resultat og henter tag_id
+               if (resultSet.next()) {
+                   tagId = resultSet.getInt("id"); // Henter id fra resultatet
+               }
+           } catch (SQLException e) {
+               e.printStackTrace(); // Håndterer eventuelle SQL-fejl
+           }
+           return tagId; // Returnerer tag_id, eller -1 hvis tagget ikke blev fundet
+       }
+
+
 
        // Metode til at finde tags til den specifikke attraktion!
        private List<String> getTagsForAttraction(int attractionId) {
@@ -150,46 +196,95 @@
            }
            return cities;
        }
-   }
-       /*
-       public int getCityId(String city_name) {
-           List<City> cities = getCities();
-           for (City city : cities) {
-               if (city.getC_name().equals(city_name)) {
-                   int city_id = city.getCity_id();
-                   return city_id;
-               }
-           }
-           return 0;
-       }
-   }
-/*
-       // Hent bys ID fra databasen baseret på city_name
-       public int getCityId(City city_name) {
-           int cityId = 0;
-           String sql = "SELECT city_id FROM City WHERE c_name=?"; // Brug c_name i WHERE-klausulen
+
+       public void saveAttraction(TouristAttraction touristAttraction) {
+           String sql = "INSERT INTO Attraction (a_name, description, city_id, fee) VALUES (?, ?, ?, ?)";
 
            try (Connection connection = DriverManager.getConnection(url, user, password);
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-               // Sæt city_name som parameter i SQL-forespørgslen
-               preparedStatement.setString(1, city_name);
+               statement.setString(1, touristAttraction.getName());
+               statement.setString(2, touristAttraction.getDescription());
+               statement.setInt(3, touristAttraction.getCity_id()); // Brug city_id
+               statement.setInt(4, touristAttraction.getFee());
 
-               // Udfør forespørgslen
-               try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                   if (resultSet.next()) { // Hvis der er resultater
-                       cityId = resultSet.getInt("city_id"); // Hent city_id
+               statement.executeUpdate();
+
+               // Hent den genererede attraction_id for at gemme tags
+               try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                   if (generatedKeys.next()) {
+                       int attractionId = generatedKeys.getInt(1);
+                       saveAttractionTags(attractionId, touristAttraction.getTags());
                    }
+               }
+
+           } catch (SQLException e) {
+               e.printStackTrace();
+           }
+       }
+
+       // Gem tags for attraktionen
+       private void saveAttractionTags(int attractionId, List<String> tags) {
+           String sql = "INSERT INTO Attraction_tag (attraction_id, tag_id) VALUES (?, ?)";
+
+           try (Connection connection = DriverManager.getConnection(url, user, password);
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+
+               for (String tag : tags) {
+                   int tagId = findTagIdByName(tag); // Få tag_id for det specifikke tag
+                   statement.setInt(1, attractionId);
+                   statement.setInt(2, tagId);
+                   statement.addBatch(); // Tilføj til batch
+               }
+               statement.executeBatch(); // Udfør batch-indsættelse
+
+           } catch (SQLException e) {
+               e.printStackTrace();
+           }
+       }
+
+       public boolean deleteAttraction(String name) {
+           // Først slet relaterede rækker fra Attraction_tag
+           String deleteTagsSQL = "DELETE FROM Attraction_tag WHERE attraction_id IN " +
+                   "(SELECT id FROM Attraction WHERE a_name = ?)";
+
+           // Derefter slet selve attraktionerne fra Attraction-tabellen
+           String deleteAttractionSQL = "DELETE FROM Attraction WHERE a_name = ?";
+
+           try (Connection connection = DriverManager.getConnection(url, user, password)) {
+               // Start transaktionen
+               connection.setAutoCommit(false);
+
+               // Slet tags relateret til attraktionerne
+               try (PreparedStatement deleteTagsStatement = connection.prepareStatement(deleteTagsSQL)) {
+                   deleteTagsStatement.setString(1, name);
+                   deleteTagsStatement.executeUpdate();
+               }
+
+               // Slet attraktionerne
+               try (PreparedStatement deleteAttractionStatement = connection.prepareStatement(deleteAttractionSQL)) {
+                   deleteAttractionStatement.setString(1, name);
+                   int rowsAffected = deleteAttractionStatement.executeUpdate();
+
+                   // Hvis rækker blev slettet, commit transaktionen
+                   if (rowsAffected > 0) {
+                       connection.commit();
+                       return true;
+                   } else {
+                       connection.rollback(); // Hvis ingen rækker blev slettet, rollback
+                       return false;
+                   }
+               } catch (SQLException e) {
+                   connection.rollback(); // Rollback i tilfælde af fejl
+                   e.printStackTrace();
+                   return false;
                }
            } catch (SQLException e) {
                e.printStackTrace();
            }
-           return cityId;
+           return false;
        }
-
-}
-*/
-
+   }
 
 
 

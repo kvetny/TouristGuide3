@@ -36,4 +36,3 @@ CREATE TABLE Attraction_tag (
     FOREIGN KEY (attraction_id) REFERENCES Attraction(id),
     FOREIGN KEY (tag_id) REFERENCES Tag(id)
 );
-

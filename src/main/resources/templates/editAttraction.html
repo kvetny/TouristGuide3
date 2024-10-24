@@ -10,6 +10,8 @@
 <h1>Redigér en attraktion</h1>
 <form th:action="@{/attractions/update}" method="post" th:object="${touristAttraction}">
 
+    <input type="hidden" th:field="*{id}">
+
     <label for="name">Navn:</label>
     <input type="text" id="name" th:field="*{name}" readonly /><br> <!-- Navn kan ikke ændres -->
 
@@ -24,14 +26,13 @@
     <textarea id="description" th:field="*{description}" required></textarea><br>
 
     <label>Tags:</label>
-    <div th:each="tag : ${availableTags}">
-        <input type="checkbox"
-               th:id="${tag}"
-            th:value="${tag}"
-            th:field="*{tags}"
-            th:checked="${#lists.contains(touristAttraction.tags, tag)}" />
-        <label th:for="${tag}" th:text="${tag}"></label><br>
-    </div><br>
+    <div>
+        <th:block th:each="tag : ${availableTags}">
+            <input type="checkbox" th:value="${tag}" th:field="*{tags}"
+                   th:checked="${#lists.contains(touristAttraction.tags, tag)}"/>
+            <label th:text="${tag}"></label>
+        </th:block>
+    </div>
 
     <button type="submit">Gem ændringer</button>
 </form>

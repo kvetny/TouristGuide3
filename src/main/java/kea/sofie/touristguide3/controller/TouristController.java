@@ -24,7 +24,6 @@ public class TouristController {
         this.touristRepository = touristRepository;
     }
 
-
     // Definerer et HTTP GET-endpoint, der returnerer alle turistattraktioner
     @GetMapping("")
     public String getTouristAttraction(Model model) {
@@ -40,23 +39,10 @@ public class TouristController {
         TouristAttraction attraction = touristService.getOneAttraction(name);
         model.addAttribute("touristAttraction", attraction);
         model.addAttribute("cities", touristRepository.getCities()); // Henter bynavne
-        model.addAttribute("availableTags", touristRepository.getTags());
-        model.addAttribute("city", touristRepository.getCities());
-        model.addAttribute("city_id", touristRepository.getCities()); // nicolai
+        model.addAttribute("availableTags", touristRepository.getTags()); // Tilgængelige tags til checkbokse
         return "editAttraction";
     }
 
-
-    /*
-    // Metode til at redigere i en attraktion
-    @GetMapping("/edit/{name}")
-    public String showEditForm(@PathVariable String name, Model model) {
-        TouristAttraction attraction = touristService.getOneAttraction(name);
-        model.addAttribute("touristAttraction", attraction);
-        model.addAttribute("cities", touristRepository.getCities());
-        model.addAttribute("availableTags", touristRepository.getTagsForAttraction(attraction.getId()));
-        return "editAttraction";
-    }*/
 
     @GetMapping("/{name}/tags")
     public String getAttractionTags(@PathVariable String name, Model model) {
@@ -65,30 +51,7 @@ public class TouristController {
         return "tags";
     }
 
-    @PostMapping("/update")
-    public String updateAttraction(@ModelAttribute TouristAttraction touristAttraction) {
-        touristService.updateAttraction(touristAttraction);
-        return "redirect:/attractions";
-    }
-
-    /*@PostMapping("/update")
-    public String updateAttraction(@ModelAttribute TouristAttraction touristAttraction,
-                                   @RequestParam String city_name) {
-        int cityId = touristRepository.getCityId(city_name); // Få city_id ud fra city_name
-        touristAttraction.setCity_id(cityId); // Sæt city_id på attraktionen
-
-        touristService.updateAttraction(touristAttraction); // Opdater attraktionen
-        return "redirect:/attractions";
-    }*/
-
-    /*// Metode til at opdatere en ændret attraktion
-    @PostMapping("/update")
-    public String updateAttraction(@ModelAttribute TouristAttraction touristAttraction) {
-        touristService.updateAttraction(touristAttraction);
-        return "redirect:/attractions";
-    }*/
-
-    // Metode til at tilføje en ny attraktion til databasen
+    // Metode der viser formularen til at tilføje en ny attraktion
     @GetMapping("/add")
     public String showAddForm(Model model) {
         model.addAttribute("touristAttraction", new TouristAttraction());
@@ -97,8 +60,48 @@ public class TouristController {
         return "addAttraction";
     }
 
+    // En ny instans af TouristAttraction bliver gemt i databasen!
+    @PostMapping("/save")
+    public String saveAttraction(@ModelAttribute TouristAttraction touristAttraction,
+                                 @RequestParam("city") int cityId,
+                                 @RequestParam("tags") List<String> selectedTags) {
+        // Indstil city_id og tags for attraktionen
+        touristAttraction.setCity_id(cityId);
+        touristAttraction.setTags(selectedTags);
 
+        // Gem attraktionen gennem service laget
+        touristService.saveAttraction(touristAttraction);
 
+        // Omdirigér til oversigten efter gemning
+        return "redirect:/attractions";
+    }
+
+    // En eksisterende attraktion bliver opdateret!
+    @PostMapping("/update")
+    public String updateAttraction(@ModelAttribute TouristAttraction touristAttraction,
+                                   @RequestParam("city") int cityId,
+                                   @RequestParam("tags") List<String> selectedTags) {
+        // Sæt city_id og tags på den opdaterede attraktion
+        touristAttraction.setCity_id(cityId);
+        touristAttraction.setTags(selectedTags);
+
+        // Opdater attraktionen gennem service laget
+        touristService.updateAttraction(touristAttraction);
+
+        // Omdirigér til oversigten efter opdatering
+        return "redirect:/attractions";
+    }
+
+    // Metode til at slette en attraktion
+    @PostMapping("/delete")
+    public String deleteAttraction(@RequestParam String name, Model model) {
+        boolean deleted = touristService.deleteAttraction(name);
+        if (deleted) {
+            return "redirect:/attractions";
+        } else {
+            return "redirect:/attractions"; // Viser listen med en fejlbesked
+        }
+    }
 }
 
 

@@ -31,6 +31,13 @@ public class TouristService {
     }
 
 
+    public void saveAttraction(TouristAttraction touristAttraction) {
+        touristRepository.saveAttraction(touristAttraction);
+    }
+
+    public boolean deleteAttraction(String name) {
+        return touristRepository.deleteAttraction(name);
+    }
 
 
 }
